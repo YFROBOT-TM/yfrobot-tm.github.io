@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Valon
+title: Valon Micro:bit
 navigation: 2
 ---
 
