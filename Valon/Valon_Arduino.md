@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Valon
+title: Valon Arduino
 navigation: 2
 ---
 
