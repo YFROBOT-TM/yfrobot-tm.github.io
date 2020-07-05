@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Valon
-navigation: 1
+navigation: 2
 ---
 
 ## Valon Hello World
