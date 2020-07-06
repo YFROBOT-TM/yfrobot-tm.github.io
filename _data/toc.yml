@@ -17,6 +17,15 @@
           url: "docs/extras/example-quiz"
         - title: Tags Page
           url: "tags"
+    - title: "Valon"
+      children:
+      - title: Valon_Arduino
+        URL: "pages/docs/Valon/Valon_Arduino#Valon_Arduino"
+      - title: Valon_Microbit
+        URL: "pages/docs/Valon/Valon_Microbit#Valon_Microbit"
+      - title: Valon_mPython
+        URL: "pages/docs/Valon/Valon_mPython#Valon_mPython"
+
     - title: "About"
       url: "about"
     - title: "News"
