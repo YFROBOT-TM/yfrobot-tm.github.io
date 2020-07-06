@@ -32,12 +32,12 @@ url: "https://yfrobot-tm.github.io" # the base hostname & protocol for your site
 #github_repo: "yfrobot-tm.github.io"
 
 # Optional
-twitter: vsoch
-linkedin: vsochat
-dockerhub: vanessa
+#twitter: vsoch
+#linkedin: vsochat
+#dockerhub: vanessa
 
 # Should there be feedback buttons at the bottom of pages?
-feedback: true
+feedback: false
 
 # Link to a privacy policy in footer, uncomment and define if wanted
 # privacy: https://domain.com/privacy
@@ -46,8 +46,8 @@ feedback: true
 # Image and (square) dimension for logo (don't start with /)
 # If commented, will use material hat theme
 # logo: "assets/img/logo/SRCC-square-red.png"
-logo_pixels: 34
-color: "#30638e"
+logo_pixels: 12
+color: "#1c3952"
 # color: "#8c1515" # primary color for header, buttons
 
 # Build settings
