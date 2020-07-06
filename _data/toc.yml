@@ -18,6 +18,7 @@
         - title: Tags Page
           url: "tags"
     - title: "Valon"
+      url: "pages/docs/Valon"
       children:
       - title: Valon_Arduino
         URL: "pages/docs/Valon/Valon_Arduino#Valon_Arduino"
