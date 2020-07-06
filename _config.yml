@@ -27,7 +27,7 @@ baseurl: "/yfrobot-tm.github.io" # the subpath of your site, e.g. /blog
 url: "https://yfrobot-tm.github.io" # the base hostname & protocol for your site
 
 # Social (First three Required)
-#repo: "https://github.com/YFROBOT-TM/yfrobot.github.io"
+#repo: "https://github.com/YFROBOT-TM/yfrobot-tm.github.io"
 #github_user: "YFROBOT-TM"
 #github_repo: "yfrobot-tm.github.io"
 
