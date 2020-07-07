@@ -1,108 +1,129 @@
----
-layout: null
-excluded_in_search: true
----
-(function () {
+'use strict';
+
+(function ($, lunr, database) {
+	var resultsContainer = $('#search-results')
+	var navigationContainer = $('#navigation')
+	var nothingFound = $('<li>Nothing found.</li>')
+	var searchQuery = $('#search-input')
+	database = database || {}
+
+	function createSearchStore(data) {
+		var searchStore = lunr(function () {
+			var self = this
+
+			self.field('id');
+			self.field('title', { boost: 10 });
+			self.field('category');
+			self.field('content');
+
+			Object.keys(data).forEach(function (key) {
+				self.add({
+					id: key,
+					title: data[key].title,
+					category: data[key].category,
+					content: data[key].content
+				});
+			})
+
+		});
+
+		return searchStore
+	}
+
+	function resultEntry(result) {
+		var searchEntry = $('<li />')
+		var searchLink = $('<a />')
+
+		var categoryPath = result.url.split('/')
+		categoryPath.shift()
+		categoryPath.pop()
+
+		searchEntry
+			.append(searchLink)
+
+		searchLink.attr('href', result.href)
+
+		searchLink.text(result.title)
+
+		return searchEntry
+	}
+
+	function displayResults(results) {
+		resultsContainer.empty()
+
+		if (results.length > 0) {
+			results.map(function(entry) {
+				resultsContainer.append(resultEntry(entry))
+			})
+		} else {
+			resultsContainer.append(nothingFound)
+		}
+
+		navigationContainer.hide()
+		resultsContainer.show()
+	}
+
+	function hideResults() {
+		resultsContainer.hide()
+		navigationContainer.show()
+	}
+
+	function searchStore(store, data) {
+		return function (term) {
+			var results = store.search(term)
+
+			return results.map(function (result) {
+				return data[result.ref]
+			})
+		}
+	}
+
+	function queryChange(display, hide, search) {
+		return function (event) {
+			var value = event.srcElement.value
+
+			if (value.length === 0) {
+				hide()
+			}
+
+			if (value.length > 2) {
+				display(search(value))
+			}
+		}
+	}
+
+	function keyboardControls(hide) {
+		return function (event) {
+			switch (event.keyCode) {
+				case 27:
+					hide()
+				break
+			}
+		}
+	}
+
 	function getQueryVariable(variable) {
-		var query = window.location.search.substring(1),
-			vars = query.split("&");
+		var query = window.location.search.substring(1);
+		var vars = query.split('&')
 
 		for (var i = 0; i < vars.length; i++) {
-			var pair = vars[i].split("=");
+			var pair = vars[i].split('=')
 
 			if (pair[0] === variable) {
-				return decodeURIComponent(pair[1].replace(/\+/g, '%20')).trim();
+				return decodeURIComponent(pair[1].replace(/\+/g, '%20'))
 			}
 		}
 	}
 
-	function getPreview(query, content, previewLength) {
-		previewLength = previewLength || (content.length * 2);
+	var search = searchStore(createSearchStore(database), database)
+	var searchTerm = getQueryVariable('query')
 
-		var parts = query.split(" "),
-			match = content.toLowerCase().indexOf(query.toLowerCase()),
-			matchLength = query.length,
-			preview;
-
-		// Find a relevant location in content
-		for (var i = 0; i < parts.length; i++) {
-			if (match >= 0) {
-				break;
-			}
-
-			match = content.toLowerCase().indexOf(parts[i].toLowerCase());
-			matchLength = parts[i].length;
-		}
-
-		// Create preview
-		if (match >= 0) {
-			var start = match - (previewLength / 2),
-				end = start > 0 ? match + matchLength + (previewLength / 2) : previewLength;
-
-			preview = content.substring(start, end).trim();
-
-			if (start > 0) {
-				preview = "..." + preview;
-			}
-
-			if (end < content.length) {
-				preview = preview + "...";
-			}
-
-			// Highlight query parts
-			preview = preview.replace(new RegExp("(" + parts.join("|") + ")", "gi"), "<strong>$1</strong>");
-		} else {
-			// Use start of content if no match found
-			preview = content.substring(0, previewLength).trim() + (content.length > previewLength ? "..." : "");
-		}
-
-		return preview;
+	if (searchTerm) {
+		displayResults(search(searchTerm))
+		searchQuery.attr('value', searchTerm)
 	}
 
-	function displaySearchResults(results, query) {
-		var searchResultsEl = document.getElementById("search-results"),
-			searchProcessEl = document.getElementById("search-process");
+	searchQuery.on('input', queryChange(displayResults, hideResults, search))
+	$(document).on('keyup', keyboardControls(hideResults))
 
-		if (results.length) {
-			var resultsHTML = "";
-			results.forEach(function (result) {
-
-  				var item = window.data[result.ref]
-                                if (item.title) {
-					contentPreview = getPreview(query, item.content, 170),
-					titlePreview = getPreview(query, item.title);
-					resultsHTML += "<li><h4><a href='{{ site.baseurl }}" + item.url.trim() + "'>" + titlePreview + "</a></h4><p><small>" + contentPreview + "</small></p></li>";
-				}
-			});
-
-			searchResultsEl.innerHTML = resultsHTML;
-			searchProcessEl.innerText = "Showing";
-		} else {
-			searchResultsEl.style.display = "none";
-			searchProcessEl.innerText = "No";
-		}
-	}
-
-	window.index = lunr(function () {
-		this.field("id");
-		this.field("title", {boost: 10});
-		this.field("categories");
-		this.field("url");
-		this.field("content");
-	});
-
-	var query = decodeURIComponent((getQueryVariable("q") || "").replace(/\+/g, "%20")),
-		searchQueryContainerEl = document.getElementById("search-query-container"),
-		searchQueryEl = document.getElementById("search-query");
-
-	searchQueryEl.innerText = query;
-        if (query != ""){
-   		searchQueryContainerEl.style.display = "inline";
-        }
-
-	for (var key in window.data) {
-		window.index.add(window.data[key]);
-	}
-
-	displaySearchResults(window.index.search(query), query); // Hand the results off to be displayed
-})();
+})(Zepto, lunr, window.database)
