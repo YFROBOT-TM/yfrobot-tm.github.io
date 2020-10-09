@@ -9,10 +9,9 @@
 - Battery：
 
   1. When installing the battery, please carefully check the battery installation direction;
-2. After activating the battery and turning it on, the power indicator does not light up, please check the battery installation direction again;
+  2. After activating the battery and turning it on, the power indicator does not light up, please check the battery installation direction again;
   3. Only supports two 3.7V14500 lithium batteries, not dry batteries;
-4. Charging: need to remove the battery and use a special charger to charge.
-  
+  4. Charging: need to remove the battery and use a special charger to charge.
 - In case of other problems, please contact our customer service or technical support, contact information:
 
   1. Phone number: 17696701116 (same number on WeChat/QQ)
