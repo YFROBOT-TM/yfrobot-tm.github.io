@@ -1,0 +1,291 @@
+/*
+  Motor speed measurement - 单霍尔电机速度测量-单右电机
+  ----------------------------------------------------------------
+  This example code is in the public domain.
+  www.yfrobot.com
+*/
+#include "oledfont.h"
+#include "valonOLED.h"
+#define voltagePin A7
+float voltageVal = 0;
+
+#define Rand255 31920
+
+#define MRPinDir 9        //Direction of the motor.
+#define MRPinSpeed 6      //Power of motor.
+#define MLPinDir 4      // Direction of the left motor.
+#define MLPinSpeed 5    // Power of left motor.
+
+#define EncoderLXOR  2  // 连接到中断引脚,该引脚信号来自于 AB相异或
+#define EncoderLB  7
+#define EncoderRXOR  3  // 连接到中断引脚,该引脚信号来自于 AB相异或
+#define EncoderRB  8
+
+
+
+unsigned long previousMillis = 0;   // 记录上一次时间
+int intervalTime = 1000;             // 采样时间
+uint16_t pulseCountRight = 0;       // 右电机脉冲计数
+uint16_t pulseCountLeft = 0;        // 左电机脉冲计数
+float SpeedRight = 100;                    // 电机运行速度
+float SpeedLeft = 100;                    // 电机运行速度
+bool motorLeftDir = 1;           // 电机方向true - 正向; false - 反向
+bool motorRightDir = 1;          // 电机方向true - 正向; false - 反向
+
+int rp = 0;                         // 转数
+float rpm = 0;                      // 转速 ,转/分
+int ppr = 2;                        // 单圈脉冲数
+float RealSpeedRight = 0.0;
+float RealSpeedLeft = 0.0;
+bool SpeedFlag = 0;
+
+float kp_right = 0.7;
+float kd_right = 0.2;
+float ki_right = 0;
+float P_right = 0, I_right = 0, D_right = 0, PID_value_right = 0;
+float Error_right = 0, LastError_right = 0; 
+
+float kp_left = 0.7;
+float kd_left = 0.2;
+float ki_left = 0;
+float P_left = 0, I_left = 0, D_left = 0, PID_value_left = 0;
+float Error_left = 0, LastError_left = 0; 
+
+String Command = "";
+bool CommandFlag = 0;
+
+void GetRealSpeed()
+{
+  if (millis() - previousMillis >= intervalTime) {
+    SpeedFlag = 1;
+    detachInterrupt(digitalPinToInterrupt(EncoderRXOR)); // 关闭外部中断
+    detachInterrupt(digitalPinToInterrupt(EncoderLXOR)); // 关闭外部中断
+//    Serial.print("pulseCountRight = ");
+//    Serial.print(pulseCountRight);
+    rp = pulseCountRight / (ppr * 2);
+//    Serial.print(" rp =");
+//    Serial.print(rp);
+    rpm = (float)(rp * 60000 / intervalTime); // 转/分
+//    Serial.print(" rpm =");
+//    Serial.print(rpm);
+//    Serial.print(" RealSpeedRight =");
+    RealSpeedRight = (rpm*255.0)/32460.0;
+//    Serial.println(RealSpeedRight);
+    pulseCountRight = 0;
+    
+//    Serial.print("pulseCountLeft = ");
+//    Serial.print(pulseCountLeft);
+    rp = pulseCountLeft / (ppr * 2);
+//    Serial.print(" rp =");
+//    Serial.print(rp);
+    rpm = (float)(rp * 60000 / intervalTime); // 转/分
+//    Serial.print(" rpm =");
+//    Serial.print(rpm);
+//    Serial.print(" RealSpeedLeft =");
+    RealSpeedLeft = (rpm*255.0)/32460.0;
+//    Serial.println(RealSpeedLeft);
+    pulseCountLeft = 0;
+    previousMillis = millis();
+    attachInterrupt(digitalPinToInterrupt(EncoderRXOR), countRight, CHANGE);  //引脚电平发生改变时触发
+    attachInterrupt(digitalPinToInterrupt(EncoderLXOR), countLeft, CHANGE);  //引脚电平发生改变时触发
+  }
+}
+
+void CloseSpeed()
+{
+  float r_speed = 0, l_speed = 0;
+  String prt = "";
+  GetRealSpeed();
+  if(SpeedFlag == 1)
+  {
+    Error_right = RealSpeedRight - SpeedRight;
+    P_right = Error_right;
+    I_right += Error_right;
+    D_right = LastError_right - Error_right;
+    LastError_right = Error_right;
+
+    Error_left = RealSpeedLeft - SpeedLeft;
+    P_left = Error_left;
+    I_left += Error_left;
+    D_left = LastError_left - Error_left;
+    LastError_left = Error_left;
+
+    PID_value_right = kp_right*P_right + ki_right*I_right + kd_right*D_right;
+    PID_value_left = kp_left*P_left + ki_left*I_left + kd_left*D_left;
+
+
+//    Serial.print("PID_right: ");
+//    Serial.print(PID_value_right);
+//    Serial.print(" PID_left: ");
+//    Serial.println(PID_value_left);
+
+
+    r_speed = SpeedRight - PID_value_right;
+    l_speed = SpeedLeft - PID_value_left;
+    if(r_speed < 0)
+    {
+      r_speed = 0;
+    }
+    else if(r_speed > 255)
+    {
+      r_speed = 255;
+    }
+    if(l_speed < 0)
+    {
+      l_speed = 0;
+    }
+    else if(l_speed > 255)
+    {
+      l_speed = 255;
+    }
+    
+//    Serial.print("right_after: ");
+//    Serial.println(r_speed);
+//    Serial.print(" left_after: ");
+//    Serial.println(l_speed);
+//    prt += "RealSpeedRight:";
+//    prt += String(RealSpeedRight);
+//    prt += ',';
+//    prt += "RealSpeedLeft:";
+//    prt += String(RealSpeedLeft);
+//    prt += ',';
+//    prt += "r_speed:";
+//    prt += String(r_speed);
+//    prt += ',';
+//    prt += "l_speed:";
+//    prt += String(l_speed);
+//    Serial.println(prt);
+
+    OLED_ShowString(90, 3, floatToChar(RealSpeedRight), 16);
+    OLED_ShowString(90, 5, floatToChar(r_speed), 16);
+    OLED_ShowString(10, 3, floatToChar(RealSpeedLeft), 16);
+    OLED_ShowString(10, 5, floatToChar(l_speed), 16);
+    
+    analogWrite(MRPinSpeed, r_speed);
+    digitalWrite(MRPinDir, motorRightDir);
+    analogWrite(MLPinSpeed, l_speed);
+    digitalWrite(MLPinDir, motorLeftDir);
+    SpeedFlag = 0;
+  }
+}
+
+// 3位 long 转 char*
+char* floatToChar(long f) {
+  int n_h = (f / 100) % 10;
+  int n_t = (f / 10) % 10;
+  int n_e = f % 10;
+  char *str_v = new char[10];
+  sprintf(str_v, "%d.%d%d", n_h, n_t, n_e);
+  return str_v;
+}
+
+void voltage()
+{
+  voltageVal = analogRead(voltagePin);
+  long volVal = (long)voltageVal * 2000 / 1023;
+  OLED_ShowString(0, 0, "voltage:", 16);
+  OLED_ShowString(65, 0, floatToChar(volVal), 16);
+  OLED_ShowString(108, 0, "v", 16);
+  //delay(500);
+}
+
+void SerialCommand()
+{
+  if(Serial.available())
+  {
+    char a = Serial.read();
+    if(a == '=')
+    {
+      Serial.println(Command);
+      CommandFlag = 1;
+    }
+    else
+    {
+      Command += a;
+    }
+  }
+}
+
+void CommandDeal()
+{
+  if(Command[0] == '#' && CommandFlag == 1)
+  {
+    motorRightDir = Command[2] - 48;
+    motorLeftDir = Command[8] - 48;
+    SpeedRight = (Command[4] - 48)*100 + (Command[5] - 48)*10 + (Command[6] - 48);
+    SpeedLeft = (Command[10] - 48)*100 + (Command[11] - 48)*10 + (Command[12] - 48);
+    if(SpeedRight > 255)
+    {
+      SpeedRight = 255;
+    }
+    if(SpeedLeft > 255)
+    {
+      SpeedLeft = 255;
+    }
+    CommandFlag = 0;
+    Command = "";
+    Serial.print("motorRightDir: ");
+    Serial.print(motorRightDir);
+    Serial.print(" motorLeftDir: ");
+    Serial.print(motorLeftDir);
+    Serial.print(" SpeedRight: ");
+    Serial.print(SpeedRight);
+    Serial.print(" SpeedLeft: ");
+    Serial.println(SpeedLeft);
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(EncoderRXOR, INPUT);
+  pinMode(MRPinSpeed, OUTPUT);
+  pinMode(MRPinDir, OUTPUT);
+
+  pinMode(voltagePin, INPUT);
+  analogReference(DEFAULT); // 设置参考电压5V
+
+  OLED_Init();
+  OLED_ColorTurn(0);    // 0正常显示 1反色显示
+  OLED_DisplayTurn(0);  // 0正常显示 1翻转180度显示
+
+  analogWrite(MRPinSpeed, SpeedRight);
+  digitalWrite(MRPinDir, motorRightDir);
+  analogWrite(MLPinSpeed, SpeedLeft);
+  digitalWrite(MLPinDir, motorLeftDir);
+  /*
+    mode: defines when the interrupt should be triggered. Four constants are predefined as valid values:
+    - LOW to trigger the interrupt whenever the pin is low,
+    - CHANGE to trigger the interrupt whenever the pin changes value
+    - RISING to trigger when the pin goes from low to high,
+    - FALLING for when the pin goes from high to low.
+    The Due board allows also:
+    - HIGH to trigger the interrupt whenever the pin is high.
+  */
+  attachInterrupt(digitalPinToInterrupt(EncoderRXOR), countRight, CHANGE);  //引脚电平发生改变时触发
+  attachInterrupt(digitalPinToInterrupt(EncoderLXOR), countLeft, CHANGE);  //引脚电平发生改变时触发
+  previousMillis = millis();
+}
+
+void loop() {
+  CloseSpeed();
+  //GetRealSpeed();
+  voltage();
+  SerialCommand();
+  CommandDeal();
+  Serial.print("motorRightDir: ");
+  Serial.print(motorRightDir);
+  Serial.print(" motorLeftDir: ");
+  Serial.print(motorLeftDir);
+  Serial.print(" SpeedRight: ");
+  Serial.print(SpeedRight);
+  Serial.print(" SpeedLeft: ");
+  Serial.println(SpeedLeft);
+}
+
+void countRight() {
+  pulseCountRight += 1;
+}
+
+void countLeft(){
+  pulseCountLeft += 1;
+}
