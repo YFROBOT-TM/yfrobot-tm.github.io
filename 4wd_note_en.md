@@ -4,7 +4,7 @@
 
 - Warning: The main body of the car is composed of two upper and lower PCBs. When assembling the two PCBs, **be sure to align the direction of PCBs and align the connecting hole**, then insert the connecting hole, to prevent damage to the car.
 
-  ![4wd_installation](https://github.com/YFROBOT-TM/yfrobot-tm.github.io/raw/master/pic/4wd_PCBinstallation_en.png)
+  ![4wd_installation](pic/4wd_PCBinstallation_en.png)
 
 - Battery：
 
@@ -22,7 +22,7 @@
 
   4. E-mail：yfrobot@qq.com
 
-![img](https://github.com/YFROBOT-TM/yfrobot-tm.github.io/raw/master/pic/4wd_2.png)![img](https://github.com/YFROBOT-TM/yfrobot-tm.github.io/raw/master/pic/4wd_3.png)![img](https://github.com/YFROBOT-TM/yfrobot-tm.github.io/raw/master/pic/4wd_4.png)
+![img](pic/4wd_2.png)![img](pic/4wd_3.png)![img](pic/4wd_4.png)
 
  
 

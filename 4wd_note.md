@@ -4,7 +4,7 @@
 
 - 警告：智能车主体由上下两块PCB组成，将两片PCB进行组装时一定注意**对齐方向及连接孔位插入**，以防烧坏小车。
 
-  ![4wd_PCB安装](https://github.com/YFROBOT-TM/yfrobot-tm.github.io/raw/master/pic/4wd_PCBinstallation.png)
+  ![4wd_PCB安装](pic/4wd_PCBinstallation.png)
 
 - 电池部分：
 
@@ -26,7 +26,7 @@
 
   4、邮件(e-mail)：yfrobot@qq.com
 
-![img](https://github.com/YFROBOT-TM/yfrobot-tm.github.io/raw/master/pic/4wd_2.png)![img](https://github.com/YFROBOT-TM/yfrobot-tm.github.io/raw/master/pic/4wd_3.png)![img](https://github.com/YFROBOT-TM/yfrobot-tm.github.io/raw/master/pic/4wd_4.png)
+![img](pic/4wd_2.png)![img](pic/4wd_3.png)![img](pic/4wd_4.png)
 
  
 
